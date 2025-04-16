@@ -8,7 +8,7 @@
 import UIKit
 
 class RecipeViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
-
+    
     // MARK: - Outlets and initial variables
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
@@ -18,7 +18,7 @@ class RecipeViewController: UIViewController, UITableViewDataSource, UITableView
     var filteredRecipes: [Recipe] = []
     
     // MARK: - Search button and related API functionality
-
+    
     // Debug test to help make sure that the search bar is coming into focus
     func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
         print("Search bar is focused")
@@ -32,49 +32,51 @@ class RecipeViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.reloadData()  // Reload the table view
         
         print("Cancel button clicked")
+        //Make this god forsake keyboard go away so we can get back to business
         searchBar.resignFirstResponder()
     }
     
     // Func to trigger the API call after user inputs search text
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         print("Search text: \(searchText)")
-
-        // If no search text then display current (empty) array of recipes else return filtered recipes
+        
+        // If no text then display empty recipe array
         if searchText.isEmpty {
-            filteredRecipes = recipes // Reset to the full list
+            filteredRecipes = recipes // Reset to the full list, not currently functional
             tableView.reloadData()
             return
         }
-
+        
         // Only filter recipes if search text is not empty
         filteredRecipes = recipes.filter { recipe in
             return recipe.title.lowercased().contains(searchText.lowercased())
         }
-
+        
         // Reload table view with filtered recipes
         tableView.reloadData()
-
         
+        //Fetch recipes with passed in search text
         fetchRecipes(query: searchText)
     }
     // MARK: - view loader
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Test with hard coded recipes
+        // Test recipes, don't uncomment unless debugging
         /*recipes = [
-            Recipe(id: 1, title: "Ramen", image: "", imageType: "", ingredients: [
-                Ingredient(name: "Noodles", quantity: 100, unit: "grams"),
-                Ingredient(name: "Broth", quantity: 1, unit: "cup"),
-                Ingredient(name: "Egg", quantity: 1, unit: "")
-            ]),
-            Recipe(id: 2, title: "Som Tam", image: "", imageType: "", ingredients: [
-                Ingredient(name: "Papaya", quantity: 1, unit: "cup"),
-                Ingredient(name: "Tomatoes", quantity: 2, unit: ""),
-                Ingredient(name: "Chili", quantity: 1, unit: "tbsp")
-            ])
-    ]*/
+         Recipe(id: 1, title: "Ramen", image: "", imageType: "", ingredients: [
+         Ingredient(name: "Noodles", quantity: 100, unit: "grams"),
+         Ingredient(name: "Broth", quantity: 1, unit: "cup"),
+         Ingredient(name: "Egg", quantity: 1, unit: "")
+         ]),
+         Recipe(id: 2, title: "Som Tam", image: "", imageType: "", ingredients: [
+         Ingredient(name: "Papaya", quantity: 1, unit: "cup"),
+         Ingredient(name: "Tomatoes", quantity: 2, unit: ""),
+         Ingredient(name: "Chili", quantity: 1, unit: "tbsp")
+         ])
+         ]*/
+        
         filteredRecipes = recipes
         
         // Set delegates
@@ -82,10 +84,12 @@ class RecipeViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.delegate = self
         searchBar.delegate = self
         
-        //Set the search bar as first responder so that it will take user input immediately
+        //Bring this god forsake keyboard into focus so we can type
         searchBar.becomeFirstResponder()
         //Force cancel button to show up so that we can escape and minimize keyboard
+        //Note that for some reason cancel button didn't want to appear without this
         searchBar.showsCancelButton = true
+        //Refresh the table
         tableView.reloadData()
     }
     
@@ -122,7 +126,7 @@ class RecipeViewController: UIViewController, UITableViewDataSource, UITableView
                 return
             }
             
-            // Debug: Print raw response data (for inspection)
+            // Debug by printing the raw API response
             if let responseString = String(data: data, encoding: .utf8) {
                 print("Raw API response: \(responseString)") // Print the raw response for inspection
             }
@@ -135,7 +139,8 @@ class RecipeViewController: UIViewController, UITableViewDataSource, UITableView
                 
                 DispatchQueue.main.async {
                     self?.recipes = recipes
-                    self?.filteredRecipes = recipes // Reset filtered recipes to new list
+                    //Reset filtered recipes
+                    self?.filteredRecipes = recipes
                     print("Fetched \(recipes.count) recipes")
                     self?.tableView.reloadData()
                 }
@@ -143,12 +148,13 @@ class RecipeViewController: UIViewController, UITableViewDataSource, UITableView
                 print("Error decoding JSON: \(error.localizedDescription)")
             }
         }
+        //This would catch a lot of y'all
         session.resume()
     }
     
     // MARK: - tableView functions
     
-    // Return the number of rows in the table (based on the number of recipes)
+    // numRows
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredRecipes.count
     }
@@ -170,6 +176,8 @@ class RecipeViewController: UIViewController, UITableViewDataSource, UITableView
         print("Selected recipe: \(selectedRecipe.title)")
     }
     
+    
+    //Get ready for segue and pass in selected recipe to RecipeDetailViewController
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showRecipeDetail" {
             if let destinationVC = segue.destination as? RecipeDetailViewController,

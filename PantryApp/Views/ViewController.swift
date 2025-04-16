@@ -9,7 +9,7 @@ import UIKit
 
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
-    //Outlet view tableview
+    //Mark: -Outlets, actions, and attributes
     @IBOutlet weak var tableView: UITableView!
     
     
@@ -34,7 +34,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     //Initialize empty array of PantryItem
     var pantryItems: [PantryItem] =  []
-   
+    
     
     // MARK: - View controller methods
     override func viewDidLoad() {
@@ -51,7 +51,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         pantryItems = PantryItem.load()
         print("Loaded pantry items: \(pantryItems)")
         
-        // Add a test item if the array is empty (for testing purposes)
+        // Add a test item if the array empty
         if pantryItems.isEmpty {
             let testItem = PantryItem(name: "Flour", quantity: 2, unit: "cups")
             pantryItems.append(testItem)
@@ -62,22 +62,22 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            
-            print("Pantry tab viewWillAppear called")
-            pantryItems = PantryItem.load()
-            print("Pantry items loaded in viewWillAppear: \(pantryItems.map { "\($0.name): \($0.quantity) \($0.unit)" })")
-            tableView.reloadData()
-        }
+        super.viewWillAppear(animated)
+        
+        print("Pantry tab viewWillAppear called")
+        pantryItems = PantryItem.load()
+        print("Pantry items loaded in viewWillAppear: \(pantryItems.map { "\($0.name): \($0.quantity) \($0.unit)" })")
+        tableView.reloadData()
+    }
     
     //MARK: - tableView functions
     
-    //Calculate the number of rows in the table
+    //Numrows
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return pantryItems.count
     }
     
-    // Configure the appearance of each cell in table
+    //Cell for row at
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "PantryCell", for: indexPath) as! PantryTableViewCell
         let item = pantryItems[indexPath.row]
@@ -87,7 +87,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return cell
     }
     
-    // Implement adding and editing cells in table
+    //Did select row at
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedItem = pantryItems[indexPath.row]
         
@@ -97,7 +97,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             // Pass the selected item to AddItemViewController
             addVC.selectedItem = selectedItem  // This will be nil when adding a new item
             
-            // Set the onSave closure to update the pantryItems array
+            // Set closure to update pantry array
             addVC.onSave = { [weak self] updatedItem in
                 if let selectedItem = addVC.selectedItem {
                     // Editing an existing item
@@ -120,21 +120,21 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 self?.tableView.reloadData()  // Reload the table view to reflect the changes
             }
             
-            // Present the AddItemViewController
+            // Present add item VC, note no segue in storyboard
             self.present(addVC, animated: true, completion: nil)
         }
     }
     
-    // Enable delete swipe action for cells in table
+    // Enable delete swipe action for cells
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            // Remove the item from the pantryItems array
+            // Remove the item from pantry
             pantryItems.remove(at: indexPath.row)
             
             // Save the updated pantryItems to UserDefaults
             PantryItem.save(pantryItems)
             
-            // Reload the table view to reflect the change
+            // Reload tableview
             tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }

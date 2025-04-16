@@ -29,6 +29,7 @@ class ShoppingListViewController: UIViewController, (UITableViewDataSource), (UI
         let ingredientName: String
     }
     
+    // MARK: - View funcs
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -42,28 +43,30 @@ class ShoppingListViewController: UIViewController, (UITableViewDataSource), (UI
         super.viewWillAppear(animated)
         
         shoppingList = compareIngredientsAgainstPantry()
+        //Debugging the pantry not refreshing
         print("Pantry tab viewWillAppear called")
         pantryItems = PantryItem.load()
         print("Pantry items loaded in viewWillAppear: \(pantryItems.map { "\($0.name): \($0.quantity) \($0.unit)" })")
         tableView.reloadData()
     }
-
     
     
-    // MARK: - TableView Data source and delegates
     
+    // MARK: - Tableview methods
+    
+    //Num sections, sections reference unique recipes saved 'to-cook'
     func numberOfSections(in tableView: UITableView) -> Int {
         return shoppingList.count
     }
-    
+    //Numrows
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return shoppingList[section].missingIngredients.count
     }
-    
+    //Header title
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return shoppingList[section].recipe.title
     }
-    
+    //Cell for row at
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ShoppingListCell", for: indexPath)
         
@@ -75,6 +78,7 @@ class ShoppingListViewController: UIViewController, (UITableViewDataSource), (UI
         return cell
     }
     
+    //Row selection
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let result = shoppingList[indexPath.section]
         let recipeId = result.recipe.id
@@ -92,7 +96,7 @@ class ShoppingListViewController: UIViewController, (UITableViewDataSource), (UI
         // Remove the ingredient from the displayed list
         shoppingList[indexPath.section].missingIngredients.remove(at: indexPath.row)
         
-        // If the section is now empty, remove the entire section
+        // If the section empty, remove
         if shoppingList[indexPath.section].missingIngredients.isEmpty {
             shoppingList.remove(at: indexPath.section)
             tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)

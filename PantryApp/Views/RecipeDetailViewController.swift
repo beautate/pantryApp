@@ -17,10 +17,10 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
     
     var selectedRecipe: Recipe?
     
-    // MARK: - View lifecycle methods
+    
+    //Mark: -View loading
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         tableView.dataSource = self
         tableView.delegate = self
     }
@@ -32,7 +32,7 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
             print("No recipe selected!")
             return
         }
-
+        
         recipeTitleLabel.text = recipe.title
         if let imageUrlString = recipe.image, let url = URL(string: imageUrlString) {
             DispatchQueue.global().async {
@@ -43,7 +43,7 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
                 }
             }
         }
-        
+        //Call to API query for the detailed recipe that was passed in from RVC
         fetchDetailedRecipeInfo(for: recipe) { [weak self] detailedRecipe in
             guard let _ = detailedRecipe else {
                 print("Failed to fetch detailed recipe info")
@@ -51,16 +51,15 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
             }
             self?.updateToCookButtonAppearance()
         }
-
-        
         tableView.reloadData()
     }
     
     // MARK: - TableView methods
+    //Numrows
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return (selectedRecipe?.extendedIngredients.count ?? 0)
     }
-    
+    //Cell for row at
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "RecipeDetailCell", for: indexPath) as! RecipeDetailTableViewCell
         
@@ -76,7 +75,8 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
         return cell
     }
     
-    @objc func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    //ability to select row for further functionality
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let recipe = selectedRecipe {
             print("Selected recipe: \(recipe.title)")
         }
@@ -84,6 +84,7 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
     
     // MARK: - Fetcher
     func fetchDetailedRecipeInfo(for recipe: Recipe, completion: @escaping (RecipeDetail?) -> Void) {
+        //Declare session and set code URL query and API key
         let session = URLSession.shared
         let apiKey = "0c533d03241141d9936789d588eafc97"
         let url = URL(string: "https://api.spoonacular.com/recipes/\(recipe.id)/information?apiKey=\(apiKey)")!
@@ -99,6 +100,7 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
                 print("Raw API response: \(responseString)")
             }
             
+            //Initialize decoder
             let decoder = JSONDecoder()
             do {
                 let detailedRecipe = try decoder.decode(RecipeDetail.self, from: data)
@@ -107,8 +109,9 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
                 
                 let ingredients = detailedRecipe.extendedIngredients.map { "\($0.name): \($0.amount) \($0.unit)" }
                 print("Ingredients for \(detailedRecipe.title): \(ingredients)")
-
+                
                 DispatchQueue.main.async {
+                    //Populate necessary attributes
                     self?.selectedRecipe?.title = detailedRecipe.title
                     self?.selectedRecipe?.image = detailedRecipe.image
                     self?.selectedRecipe?.extendedIngredients = detailedRecipe.extendedIngredients
@@ -137,7 +140,7 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
         print("To cook button tapped")
         toggleToCookStatus()
     }
-    
+    // Switch between to-cook states
     private func toggleToCookStatus() {
         print("toggleToCookStatus called")
         
@@ -152,11 +155,11 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
                 print("Failed to fetch detailed recipe info for \(recipe.title)")
                 return
             }
-            
             self?.saveRecipeToToCookList(detailedRecipe)
         }
     }
     
+    //Add or remove recipe to to-cook list depending on whether it exists there already
     private func saveRecipeToToCookList(_ detailedRecipe: RecipeDetail) {
         var toCookRecipes = loadToCookRecipes()
         
@@ -170,6 +173,7 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
         
         saveToCookRecipes(toCookRecipes)
         
+        //Display the current list of to-cook recipes
         let updatedList = loadToCookRecipes()
         print("After toggle, To Cook list: \(updatedList.map { $0.title })")
         
@@ -190,10 +194,10 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
             let ingredients = recipe.extendedIngredients.map { "\($0.name): \($0.amount) \($0.unit)" }
             print("Recipe: \(recipe.title), Ingredients: \(ingredients)")
         }
-        
         return decoded
     }
-
+    
+    //Encode recipe and save details
     private func saveToCookRecipes(_ recipes: [RecipeDetail]) {
         let encoder = JSONEncoder()
         do {
@@ -205,6 +209,7 @@ class RecipeDetailViewController: UIViewController, (UITableViewDataSource), (UI
         }
     }
     
+    //Change to cook button's appearance depending on state. Not fully functional.
     private func updateToCookButtonAppearance() {
         print("updateToCookButtonAppearance called")
         

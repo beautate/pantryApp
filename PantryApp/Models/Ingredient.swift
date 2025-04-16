@@ -18,7 +18,10 @@ struct RecipeDetail: Codable {
     var extendedIngredients: [Ingredient] = [] // Update the type to [Ingredient] instead of [String]
 }
     
-
+    /*
+     Struct to hold ingredient returned from detail API call
+     Note that many atrributes will go unused
+     */
     struct Ingredient: Codable {
         let id: Int
         let name: String
@@ -31,12 +34,13 @@ struct RecipeDetail: Codable {
         let measures: Measures
     }
     
-    // Measures for US and Metric units
+    // Measures indicate whether the ingredient is in US or metric
     struct Measures: Codable {
         let us: Measurement
         let metric: Measurement
     }
     
+    //Note that there's an ability to access the long and short form of unit
     struct Measurement: Codable {
         let amount: Double
         let unitShort: String
