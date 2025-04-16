@@ -34,7 +34,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     //Initialize empty array of PantryItem
     var pantryItems: [PantryItem] =  []
+   
     
+    // MARK: - View controller methods
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -56,7 +58,19 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             PantryItem.save(pantryItems)  // Save the item to UserDefaults
         }
         
+        tableView.reloadData()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            
+            print("Pantry tab viewWillAppear called")
+            pantryItems = PantryItem.load()
+            print("Pantry items loaded in viewWillAppear: \(pantryItems.map { "\($0.name): \($0.quantity) \($0.unit)" })")
+            tableView.reloadData()
+        }
+    
+    //MARK: - tableView functions
     
     //Calculate the number of rows in the table
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -73,6 +87,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return cell
     }
     
+    // Implement adding and editing cells in table
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedItem = pantryItems[indexPath.row]
         
@@ -91,11 +106,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                     }
                 } else {
                     // Adding a new item
-                    // Check if the item already exists (by name)
+                    // Check if the item already exists using name
                     if !(self?.pantryItems.contains(where: { $0.name == updatedItem.name }) ?? false) {
                         self?.pantryItems.append(updatedItem)  // Add the new item to the list
                     } else {
-                        // Optionally: Show an alert if the item already exists
+                        // Alert if duplicate item
                         let alert = UIAlertController(title: "Item Exists", message: "An item with this name already exists in the pantry.", preferredStyle: .alert)
                         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                         self?.present(alert, animated: true, completion: nil)
@@ -110,7 +125,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
     }
     
-    // Enable delete swipe action for the pantry items table view
+    // Enable delete swipe action for cells in table
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             // Remove the item from the pantryItems array
@@ -123,5 +138,34 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             tableView.deleteRows(at: [indexPath], with: .automatic)
         }
     }
+    
+    //Depricated search function that is now handled in RecipeViewController
+    /*func searchRecipes(query: String, completion: @escaping ([Recipe]?) -> Void) {
+     let apiKey = "e44a004d9c3c4881853e75bc8a58025a"
+     let urlString = "https://api.spoonacular.com/recipes/complexSearch?query=\(query)&apiKey=\(apiKey)"
+     
+     guard let url = URL(string: urlString) else {
+     print("Invalid URL")
+     completion(nil)
+     return
+     }
+     
+     let task = URLSession.shared.dataTask(with: url) { data, response, error in
+     guard let data = data, error == nil else {
+     print("Error fetching data: \(error?.localizedDescription ?? "Unknown error")")
+     completion(nil)
+     return
+     }
+     
+     do {
+     let decodedResponse = try JSONDecoder().decode(RecipeResponse.self, from: data)
+     completion(decodedResponse.results)  // Return the list of recipes
+     } catch {
+     print("Error decoding response: \(error)")
+     completion(nil)
+     }
+     }
+     task.resume()
+     }*/
 }
 
